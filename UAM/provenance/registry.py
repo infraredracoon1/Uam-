@@ -1,4 +1,22 @@
-import sqlite3, datetime, json
+def add_equation(
+    name, expression, variables, derivation,
+    explanation, source_citation=None, source_author=None, license_terms=None
+):
+    entry = {
+        "name": name,
+        "expression": str(expression),
+        "variables": variables,
+        "derivation": derivation,
+        "explanation": explanation,
+        "source_citation": source_citation,
+        "source_author": source_author,
+        "license_terms": license_terms,
+        "timestamp": datetime.datetime.utcnow().isoformat()
+    }
+    with open(DB_PATH, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+      
+  import sqlite3, datetime, json
 from .database import DB_PATH
 
 def add_constant(name, value, scale, derivation, explanation,
