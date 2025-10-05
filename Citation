@@ -1,0 +1,7 @@
+@software{Abney_UAM_Core_2025,
+  author       = {Anthony Abney},
+  title        = {UAM Core Framework v2.0 — Universal Solver for Navier–Stokes and Yang–Mills},
+  year         = {2025},
+  url          = {https://github.com/<your-org>/UAM-Core},
+  note         = {Immutable Authorship License v1.0}
+}
