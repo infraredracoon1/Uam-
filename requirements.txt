@@ -1,0 +1,15 @@
+# ============================================================
+#  UAM Framework Requirements
+#  Unified Analytical Memory (UAM) v1.0
+#  © 2025 Anthony Abney. All Rights Reserved.
+# ============================================================
+
+numpy>=1.21.0
+scipy>=1.8.0
+sympy>=1.10
+pandas>=1.5
+matplotlib>=3.6
+tqdm>=4.64
+requests>=2.28
+beautifulsoup4>=4.11
+lxml>=4.9
