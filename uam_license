@@ -1,0 +1,71 @@
+============================================================
+UAM™ (Universal Analytical Machine)
+Immutable Authorship License v1.0 — © 2025 Anthony Abney
+============================================================
+
+Author:       Anthony Abney (immutable authorship)
+Co-authors:   Cody Jackson Abney, Ava Serenity Abney, Trevor Abney
+Trademark:    UAM™, BASHC™, AHRT™, TensorCore™, UAM Stamp™
+Version:      1.0
+Date:         2025-10-04
+Registry:     Unified Analytical Memory (UAM) Global Registry v2.0
+License Type: Proprietary / Immutable Authorship License v1.0
+------------------------------------------------------------
+
+This license applies to all files and software components bearing
+the UAM™, UAM Stamp™, or associated framework marks, including
+but not limited to:
+
+  • uam_research_engine.py
+  • bashc_solver.py
+  • ahrt_massgap.py
+  • tensor_core_bridge.py
+  • any constants, datasets, or logs derived from these files
+
+------------------------------------------------------------
+### RIGHTS & RESTRICTIONS
+
+All rights reserved by Anthony Abney.
+
+1.  **Permitted Uses**
+    - Academic research and personal study.
+    - Non-commercial analytical verification.
+    - Reproduction for peer review under full attribution.
+
+2.  **Prohibited Uses**
+    - Commercial resale, sublicensing, or redistribution.
+    - Removal or modification of authorship, license, or trademark notices.
+    - Derivative works claiming new authorship or altered ownership.
+    - Use of the framework for AI model training or dataset generation
+      without written consent from the author.
+
+3.  **Authorship & Attribution**
+    - All outputs, constants, logs, and derived data remain under immutable
+      authorship of Anthony Abney unless explicitly waived.
+    - “Immutable Authorship” implies perpetual linkage to the author in
+      both human-readable and machine-readable metadata.
+
+4.  **Trademark Protection**
+    - “UAM™”, “UAM Stamp™”, “BASHC™”, “AHRT™”, and “TensorCore™”
+      are proprietary identifiers belonging exclusively to Anthony Abney.
+    - Unauthorized commercial use constitutes trademark infringement.
+
+5.  **Immutable Ledger**
+    - All derivatives or validated results produced by this engine
+      are timestamped and logged to the UAM Registry v2.0 (2025-10-02T23:59Z).
+
+------------------------------------------------------------
+### DISCLAIMER
+
+This software and accompanying materials are provided
+"as is", without warranty of any kind, express or implied,
+including but not limited to the warranties of merchantability,
+fitness for a particular purpose, and noninfringement.
+
+Use of this framework constitutes full acceptance of
+these terms and the Immutable Authorship clause.
+
+------------------------------------------------------------
+© 2025 Anthony Abney. All rights reserved.
+Unauthorized reproduction or distribution is prohibited.
+============================================================
