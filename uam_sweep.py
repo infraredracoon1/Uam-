@@ -8,44 +8,33 @@
 # ============================================================
 
 """
-uam_sweep.py — orchestrates all UAM analytical engines and manages auto-registry.
+uam_sweep.py — orchestrates all UAM analytical engines and
+launches the real-time registry monitor.
 
 Usage:
-    python uam_sweep.py            # sequential sweep
+    python uam_sweep.py            # normal sequential run + monitor
     python uam_sweep.py --parallel # run all engines in parallel
-    python uam_sweep.py --upgrade  # crawl + ingest new data first
+    python uam_sweep.py --upgrade  # refresh datasets & constants first
 """
 
-import importlib, threading, time, traceback, sys, pkgutil, os
-from pathlib import Path
+import importlib, threading, time, traceback, sys
 
 UAM_VERSION = "1.0"
 AUTHOR = "Anthony Abney (immutable)"
 TRADEMARK = "UAM Stamp™"
 LICENSE = "Proprietary / Immutable Authorship License v1.0"
 
-# --------------------------------------------------------------------
-#  Auto-register support
-try:
-    from uam_logger import register_engine
-except Exception:
-    register_engine = None
-    print("[UAM] ⚠️  uam_logger not found — auto-registration disabled.")
+ENGINES = [
+    "uam_research_engine",
+    "uam_tensor_core"
+]
 
-# --------------------------------------------------------------------
+# ============================================================
+# Utility
+# ============================================================
+
 def log(msg): print(f"[UAM] {msg}")
 
-def discover_engines():
-    """Dynamically find every Python module starting with 'uam_' except this one."""
-    cwd = Path(__file__).parent
-    engines = []
-    for modinfo in pkgutil.iter_modules([str(cwd)]):
-        name = modinfo.name
-        if name.startswith("uam_") and name not in {"uam_sweep", "uam_license_header"}:
-            engines.append(name)
-    return sorted(set(engines))
-
-# --------------------------------------------------------------------
 def safe_import(name):
     try:
         return importlib.import_module(name)
@@ -53,31 +42,29 @@ def safe_import(name):
         log(f"⚠️  Could not import {name}: {e}")
         return None
 
-def run_engine(name):
+# ============================================================
+# Registry Monitor integration
+# ============================================================
+
+def start_registry_monitor():
+    """Start the notification-enabled registry monitor in background."""
     try:
-        log(f"🚀  Launching {name}")
-        mod = importlib.import_module(name)
-        # execute engine
-        if hasattr(mod, "main"): mod.main()
-        elif hasattr(mod, "uam_run"): mod.uam_run()
-        else: log(f"⚠️  {name} has no main() or uam_run().")
-
-        # auto-register after success
-        if register_engine:
-            try: register_engine(name)
-            except Exception as e: log(f"⚠️  register_engine failed: {e}")
-
-        log(f"✅  Completed {name}")
+        monitor_mod = importlib.import_module("uam_registry_monitor")
+        t = threading.Thread(target=monitor_mod.monitor, daemon=True)
+        t.start()
+        log("🧭  Registry monitor launched (live alerts active).")
     except Exception as e:
-        log(f"❌  Error in {name}: {e}")
-        traceback.print_exc()
+        log(f"⚠️  Could not start registry monitor: {e}")
 
-# --------------------------------------------------------------------
-def upgrade_all(engines):
+# ============================================================
+# Engine operations
+# ============================================================
+
+def upgrade_all():
     log("============================================================")
     log("🔁  Full upgrade cycle: ingesting datasets & updating constants")
     log("============================================================")
-    for eng in engines:
+    for eng in ENGINES:
         mod = safe_import(eng)
         if not mod: continue
         try:
@@ -92,7 +79,22 @@ def upgrade_all(engines):
     log("✅  Upgrade complete. Engines ready for unified run.")
     log("============================================================")
 
-# --------------------------------------------------------------------
+def run_engine(engine_name):
+    try:
+        log(f"🚀  Launching {engine_name}")
+        mod = importlib.import_module(engine_name)
+        if hasattr(mod, "main"): mod.main()
+        elif hasattr(mod, "uam_run"): mod.uam_run()
+        else: log(f"⚠️  {engine_name} has no main() or uam_run().")
+        log(f"✅  Completed {engine_name}")
+    except Exception as e:
+        log(f"❌  Error in {engine_name}: {e}")
+        traceback.print_exc()
+
+# ============================================================
+# Unified Sweep
+# ============================================================
+
 def uam_sweep(parallel=False, upgrade=False):
     print("============================================================")
     print(f"🔷 Unified Analytical Memory Sweep — Version {UAM_VERSION}")
@@ -101,24 +103,24 @@ def uam_sweep(parallel=False, upgrade=False):
     print(f"📜 License: {LICENSE}")
     print("============================================================")
 
-    engines = discover_engines()
-    log(f"🧩  Discovered engines: {', '.join(engines) if engines else 'None'}")
+    # start live registry monitor
+    start_registry_monitor()
 
-    if upgrade: upgrade_all(engines)
+    if upgrade: upgrade_all()
     start = time.time()
 
     if parallel:
-        threads = [threading.Thread(target=run_engine, args=(e,)) for e in engines]
+        threads = [threading.Thread(target=run_engine, args=(e,)) for e in ENGINES]
         [t.start() for t in threads]
         [t.join() for t in threads]
     else:
-        for e in engines: run_engine(e)
+        for e in ENGINES: run_engine(e)
 
     log(f"🚀 Sweep finished in {time.time()-start:.2f}s")
     log("All engines synchronized and constants verified.")
     log("============================================================")
 
-# --------------------------------------------------------------------
+# ============================================================
 if __name__ == "__main__":
     args = sys.argv[1:]
     uam_sweep("--parallel" in args, "--upgrade" in args)
