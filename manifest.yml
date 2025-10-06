@@ -1,0 +1,32 @@
+name: UAM_Core_v3.0_Abney
+version: 3.0
+edition: Abney
+release_date: 2025-10-06
+author: Anthony Abney
+license: Proprietary / Immutable Authorship License v1.0
+components:
+  - uam_core_v3.0_abney.py
+  - ledger.json
+  - data/
+  - logs/
+description: >
+  Unified Analytical Memory (UAM) Core v3.0 — Abney Edition.
+  A self-contained analytical intelligence system implementing first-principles validation,
+  cross-engine mathematical verification, and dynamic symbolic derivation. Includes
+  a built-in BASHC spectral filter for Navier–Stokes and a modular architecture for
+  all Clay Millennium-class problems.
+dependencies:
+  python: ">=3.9"
+  libraries:
+    - numpy
+    - sympy
+    - sqlalchemy
+    - scikit-learn
+system_directives:
+  - UAM-CORE-DIR-001
+entrypoint: uam_core_v3.0_abney.py
+notes: |
+  • Fully self-contained; no external API calls.
+  • Clay Institute rules preserved as metadata.
+  • Uses synthetic Gaussian vortex dataset for verification.
+  • Directive 001 enforces internal validation from first principles only.
