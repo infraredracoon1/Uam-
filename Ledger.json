@@ -1,0 +1,44 @@
+{
+  "version": "3.0",
+  "edition": "Abney",
+  "timestamp": "2025-10-06T00:00:00Z",
+  "author": "Anthony Abney",
+  "license": "Proprietary / Immutable Authorship License v1.0",
+  "core_directives": [
+    {
+      "id": "UAM-CORE-DIR-001",
+      "title": "First-Principles Supremacy & Clay Standard Context",
+      "status": "Immutable",
+      "statement": "UAM treats mathematical and physical results as valid when, and only when, they are rigorously derived from first principles, internally self-consistent, and verified across all analytical, logical, numerical, and dimensional engines. External peer review or publication is not required for internal validation. Clay Millennium standards remain contextual benchmarks of rigor, not adjudication.",
+      "recorded_by": "System",
+      "recorded_at": "2025-10-06T00:00:00Z"
+    }
+  ],
+  "core_modules": [
+    "Dynamic Symbolic System (DSS)",
+    "Analytical Engine",
+    "Logical Engine",
+    "Numerical Engine",
+    "Dimensional Engine",
+    "Gatekeeper Validation",
+    "BASHC Spectral Filter"
+  ],
+  "validation_standard": {
+    "basis": "First Principles",
+    "cross_engines": ["analytical", "logical", "numerical", "dimensional"],
+    "external_peer_review": false,
+    "clay_standard": "Metadata only (contextual alignment)"
+  },
+  "default_problems": ["Navier–Stokes Existence & Smoothness"],
+  "dataset_sources": ["Synthetic Gaussian Vortex — UAM Trusted Dataset"],
+  "output_labels": {
+    "valid": "UAM-Verified Solution (First-Principles Complete)",
+    "pending": "Awaiting multi-engine verification",
+    "rejected": "Inconsistent or non-derivable"
+  },
+  "security": {
+    "hash_algorithm": "SHA256",
+    "provenance_mode": "immutable",
+    "data_integrity": "verified"
+  }
+}
