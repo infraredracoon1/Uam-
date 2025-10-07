@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+# ===============================================================
+# uam_updater.py — Non-destructive Hot-Updater for UAM Core v3.1b
+# Author: You (infraredracoon) — MIT (or your license)
+# Purpose: Pull upgrades from your GitHub repo, stage safely,
+#          show GUI picker, apply selected changes WITHOUT
+#          overwriting your local work, back up changed files,
+#          run DB migrations, and hot-reload modules.
+# ===============================================================
+
+from __future__ import annotations
+import os, sys, json, hashlib, shutil, sqlite3, tempfile, difflib, importlib
+import zipfile, urllib.request, urllib.error, traceback
+from pathlib import Path
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, Optional, Callable
+from datetime import datetime, timezone
+
+# --------------------------- CONFIG ----------------------------
+DEFAULT_REMOTE_MANIFEST = (
+    # You can change these at runtime in UpdateManager(...)
+    "https://raw.githubusercontent.com/infraredracoon1/Uam-/main/uam_updates/manifest.json"
+)
+DEFAULT_REMOTE_ZIP = (
+    # If you prefer batch download over many raw fetches, point to a ZIP
+    # of your update payload (e.g., GitHub Actions artifact or a tag tarball)
+    None  # e.g. "https://github.com/infraredracoon1/Uam-/archive/refs/heads/main.zip"
+)
+DEFAULT_UPDATES_DIR = ".uam_updates"    # staged updates land here
+DEFAULT_BACKUPS_DIR = ".uam_backups"    # backups for any changed file
+DEFAULT_LOG_TABLE = "updater_log"       # sqlite table to record operations
+
+# ------------------------ SMALL HELPERS ------------------------
+def iso_utc() -> str:
+    # No deprecated 'Z' concatenation; keep RFC3339 with 'Z'
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+def sha256_bytes(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+def read_text(p: Path) -> str:
+    return p.read_text(encoding="utf-8", errors="replace")
+
+def write_text(p: Path, s: str):
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(s, encoding="utf-8")
+
+def safe_mkdir(p: Path):
+    p.mkdir(parents=True, exist_ok=True)
+
+def diff_str(a_bytes: bytes, b_bytes: bytes, a_name: str, b_name: str) -> str:
+    a = a_bytes.decode("utf-8", errors="replace").splitlines(keepends=True)
+    b = b_bytes.decode("utf-8", errors="replace").splitlines(keepends=True)
+    return "".join(difflib.unified_diff(a, b, fromfile=a_name, tofile=b_name, n=3))
+
+def url_get_bytes(url: str, timeout: int = 30) -> bytes:
+    req = urllib.request.Request(url, headers={"User-Agent": "UAM-Updater/3.1b"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        if r.status != 200:
+            raise RuntimeError(f"HTTP {r.status} for {url}")
+        return r.read()
+
+# --------------------------- DATA ------------------------------
+@dataclass
+class UpdateItem:
+    # One entry in manifest "items"
+    type: str                       # "file", "sql", "module", "script"
+    path: str                       # local relative path where it should live
+    url: Optional[str] = None       # where to download from (for files/modules/scripts)
+    sha256: Optional[str] = None    # expected hash for integrity
+    sql: Optional[str] = None       # direct SQL to run (alternative to url)
+    apply: str = "manual"           # "auto" or "manual"
+    description: str = ""           # shown to user
+    tags: List[str] = field(default_factory=list)
+
+@dataclass
+class UpdateManifest:
+    version: str
+    note: str = ""
+    items: List[UpdateItem] = field(default_factory=list)
+
+# ----------------------- UPDATE MANAGER ------------------------
+class UpdateManager:
+    """
+    Non-destructive updater:
+      - Downloads remote manifest (and optionally ZIP).
+      - Stages new/changed files under .uam_updates/<version>/
+      - Shows user a selection (via callback) of items to apply.
+      - When applying, backs up the existing file into .uam_backups/<ts>/...
+      - Writes new file to the proper location OR leaves .new side-by-side (safe mode).
+      - Runs SQL migrations in a transaction.
+      - Logs everything in sqlite 'updater_log' table.
+      - Can hot-reload python modules (optional).
+    """
+    def __init__(
+        self,
+        project_root: Path,
+        db_conn: Optional[sqlite3.Connection],
+        manifest_url: str = DEFAULT_REMOTE_MANIFEST,
+        zip_url: Optional[str] = DEFAULT_REMOTE_ZIP,
+        stage_dir: str = DEFAULT_UPDATES_DIR,
+        backup_dir: str = DEFAULT_BACKUPS_DIR,
+        log_table: str = DEFAULT_LOG_TABLE,
+        ui_progress: Optional[Callable[[str], None]] = None,
+        ui_diff: Optional[Callable[[str], None]] = None,
+        ui_select: Optional
